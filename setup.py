@@ -1,54 +1,71 @@
 import sys
+import shutil
 import os
+from os import path
+from glob import glob
+
 from setuptools.command.install import install
-from setuptools import setup
-
-'''
-    Just because I wanted .so file to be built same way for python and torch
-    we exec cmake from cmd here.
-'''
+from setuptools.command.develop import develop
+from setuptools import setup, find_packages
+from distutils.spawn import find_executable
 
 
-class MyInstall(install):
+PACKAGE_NAME = "MulticoreTSNE"
+
+VERSION = '0.1'
+
+SETUP_REQUIRES = ['cmake'] if not find_executable('cmake') else []
+
+
+class _LibBuilderMixin(object):
     def run(self):
-        if not os.path.exists('multicore_tsne/release'):
-            os.makedirs('multicore_tsne/release')
-        else:
-            os.system('rm -rf multicore_tsne/release/')
-            os.makedirs('multicore_tsne/release')
+        CWD = path.dirname(__file__)
+        BUILD_DIR = path.join(CWD, 'multicore_tsne', 'release')
+        try:
+            os.makedirs(BUILD_DIR)
+        except OSError:
+            pass
 
-        os.chdir('multicore_tsne/release/')
-        return_val = os.system('cmake -DCMAKE_BUILD_TYPE=RELEASE ..')
+        os.chdir(BUILD_DIR)
 
-        if return_val != 0:
-            print('cannot find cmake')
-            exit(-1)
+        if 0 != os.system('cmake -DCMAKE_BUILD_TYPE=RELEASE ..'):
+            sys.exit('Cannot find cmake. Install cmake.')
+        if 0 != os.system('make -j4' + ' VERBOSE=1' * int(self.verbose)):
+            sys.exit('Cannot find make. Install make.')
 
-        os.system('make VERBOSE=1')
-        os.chdir('../..')
-        print(os.getcwd())
-        os.system(
-            'cp multicore_tsne/release/libtsne_multicore.so python/libtsne_multicore.so')
-        install.run(self)
+        sofile = (glob('lib*.so') + glob('lib*.dll'))[0]
+        shutil.copy(sofile, path.join('..', '..', PACKAGE_NAME))
+
+        os.chdir(CWD)
+        super(_LibBuilderMixin, self).run()
+
+
+class Install(_LibBuilderMixin, install):
+    pass
+
+
+class Develop(_LibBuilderMixin, develop):
+    pass
 
 
 setup(
-    name="MulticoreTSNE",
-    version="0.1",
+    name=PACKAGE_NAME,
+    version=VERSION,
     description='Multicore version of t-SNE algorithm.',
     author="Dmitry Ulyanov (based on L. Van der Maaten's code)",
     author_email='dmitry.ulyanov.msu@gmail.com',
     url='https://github.com/DmitryUlyanov/Multicore-TSNE',
+    setup_requires=SETUP_REQUIRES,
     install_requires=[
         'numpy',
         'psutil',
         'cffi'
     ],
-
-    packages=['MulticoreTSNE'],
-    package_dir={'MulticoreTSNE': 'python'},
-    package_data={'MulticoreTSNE': ['multicore_tsne.so']},
+    packages=find_packages(),
     include_package_data=True,
 
-    cmdclass={"install": MyInstall},
+    cmdclass={
+        'install': Install,
+        'develop': Develop,
+    },
 )
