@@ -114,7 +114,7 @@ void TSNE::run(double* X, int N, int D, double* Y,
         srand(random_state);
     }
     for (int i = 0; i < N * no_dims; i++) {
-        Y[i] = randn() * .0001;
+        Y[i] = random();
     }
 
     // Perform main training loop
@@ -491,18 +491,8 @@ void TSNE::zeroMean(double* X, int N, int D) {
 }
 
 
-// Generates a Gaussian random number
-double TSNE::randn() {
-    double x, y, radius;
-    do {
-        x = 2 * (rand() / ((double) RAND_MAX + 1)) - 1;
-        y = 2 * (rand() / ((double) RAND_MAX + 1)) - 1;
-        radius = (x * x) + (y * y);
-    } while ((radius >= 1.0) || (radius == 0.0));
-    radius = sqrt(-2 * log(radius) / radius);
-    x *= radius;
-    y *= radius;
-    return x;
+double TSNE::random() {
+    return rand() / ((double) RAND_MAX + 1);
 }
 
 extern "C"

@@ -28,7 +28,7 @@ private:
     double evaluateError(int* row_P, int* col_P, double* val_P, double* Y, int N, double theta);
     void zeroMean(double* X, int N, int D);
     void computeGaussianPerplexity(double* X, int N, int D, int** _row_P, int** _col_P, double** _val_P, double perplexity, int K);
-    double randn();
+    double random();
 };
 
 #endif
