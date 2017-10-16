@@ -161,7 +161,7 @@ void TSNE::run(double* X, int N, int D, double* Y,
         // Print out progress
         if (verbose && ((iter > 0 && iter % 50 == 0) || (iter == max_iter - 1))) {
             end = time(0);
-            double C = .0;
+            double C;
 
             C = evaluateError(row_P, col_P, val_P, Y, N, theta);  // doing approximate computation here!
 
@@ -459,7 +459,7 @@ void TSNE::symmetrizeMatrix(int** _row_P, int** _col_P, double** _val_P, int N) 
             }
 
             // Update offsets
-            if (!present || (present && n <= col_P[i])) {
+            if (!present || (n <= col_P[i])) {
                 offset[n]++;
                 if (col_P[i] != n) offset[col_P[i]]++;
             }
