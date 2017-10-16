@@ -66,7 +66,6 @@ if __name__ == '__main__':
         setup_requires=SETUP_REQUIRES,
         install_requires=[
             'numpy',
-            'psutil',
             'cffi'
         ],
         packages=find_packages(),
