@@ -48,6 +48,13 @@ class Develop(_LibBuilderMixin, develop):
     pass
 
 
+def _discover_tests():
+    import unittest
+    return unittest.defaultTestLoader.discover('MulticoreTSNE',
+                                               pattern='test_*.py',
+                                               top_level_dir='.')
+
+
 if __name__ == '__main__':
     setup(
         name=PACKAGE_NAME,
@@ -69,4 +76,9 @@ if __name__ == '__main__':
             'install': Install,
             'develop': Develop,
         },
+
+        test_suite='setup._discover_tests',
+        tests_require=[
+            'scikit-learn',
+        ]
     )
